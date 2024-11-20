@@ -43,7 +43,7 @@ export class FileObject {
                 method : "POST",
                 headers:{
                     'Custom-Header': 'your-value'
-                }
+                },
                 body : formData
             })
             if(response.ok){
