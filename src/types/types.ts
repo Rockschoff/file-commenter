@@ -52,7 +52,7 @@ export class FileObject {
                     this._status = false; // Fallback if the format isn't as expected
                 }
             }else{
-                console.error("Failed to fetch file status. HTTP status:", response.status);
+                console.error("Failed to fetch file status. HTTP status:", response);
                 this._status = false;
             }
         }catch(err){
