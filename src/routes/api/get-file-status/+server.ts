@@ -33,6 +33,8 @@ export const POST: RequestHandler = async ({ request }) => {
         const formData = await request.formData();
         const key = formData.get('key');
 
+        console.log(key)
+
         if (!key || typeof key !== 'string') {
             return new Response(
                 JSON.stringify({ error: 'Key value not provided or is in incorrect format. Key must be a string.' }),
@@ -58,9 +60,12 @@ export const POST: RequestHandler = async ({ request }) => {
         let mongoExists = false;
         try {
             const client = await getMongoClient();
+            console.log("client " , key)
             const database = client.db(mongoDatabase);
+            console.log("db " , key)
             const collection = database.collection(mongoCollection);
-
+            console.log("collection " , key)
+            console.log("here")
             const document = await collection.findOne({ document_name: basename });
             if (document) {
                 mongoExists = true;

@@ -27,7 +27,7 @@ export const POST: RequestHandler = async ({ request }) => {
         const comment = formData.get('comment'); // Can be empty but not null
         const key = formData.get('key');
 
-
+        console.log(key , comment)
         if (!key || typeof key !== 'string') {
             return new Response(JSON.stringify({ error: 'Invalid key provided' }), { status: 400 });
         }
@@ -41,6 +41,7 @@ export const POST: RequestHandler = async ({ request }) => {
         try {
             const headResponse = await s3.headObject({ Bucket: s3Bucket, Key: key }).promise();
             metadata = headResponse.Metadata || {};
+            console.log(metadata)
             metadata.comment = comment; // Update or add the comment field
         } catch (err: any) {
             if (err.code === 'NotFound') {
