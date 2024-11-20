@@ -31,6 +31,7 @@ export async function getFileListWithPrefix(prefix: string): Promise<(FileObject
                     return new FolderObject(item.S3Key, item.comment);
                 } else {
                     const fileObject = new FileObject(item.S3Key, item.status, item.comment);
+                    console.log("checking status")
                     await fileObject.checkStatus();
                     return fileObject;
                 }

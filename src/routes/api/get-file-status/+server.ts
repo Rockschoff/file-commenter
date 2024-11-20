@@ -21,6 +21,7 @@ const mongoCollection = import.meta.env.VITE_MONGODB_COLLECTION as string;
 let mongoClient: MongoClient | null = null;
 
 async function getMongoClient() {
+    console.log("here")
     if (!mongoClient) {
         mongoClient = new MongoClient(mongoUri);
         await mongoClient.connect();
