@@ -42,7 +42,7 @@ export class FileObject {
             const response = await fetch(url , {
                 method : "POST",
                 headers:{
-                    'Content-type': 'multipart/form-data'
+                    'Content-type': 'application/json'
                 },
                 body : formData
             })
