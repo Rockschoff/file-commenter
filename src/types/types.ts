@@ -41,6 +41,9 @@ export class FileObject {
         try{
             const response = await fetch(url , {
                 method : "POST",
+                headers:{
+                    'Custom-Header': 'your-value'
+                }
                 body : formData
             })
             if(response.ok){
