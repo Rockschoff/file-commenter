@@ -77,13 +77,17 @@ export class FileObject {
         
 
         const url = "/api/comment-on-file"
-        const formData = new FormData()
-        formData.append("comment" , newComment)
-        formData.append('key' , this.S3Key)
+        const body = {
+            "comment" : newComment,
+            "key" : this.S3Key
+        }
         try{
             const response = await fetch(url , {
                 method:"POST",
-                body : formData
+                headers:{
+                    'Content-type': 'application/json'
+                },
+                body : JSON.stringify(body)
             })
             if(response.ok){
                 console.log("comment has been added to the file")

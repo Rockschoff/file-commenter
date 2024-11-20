@@ -23,9 +23,9 @@ const client = new MongoClient(mongoUri);
 export const POST: RequestHandler = async ({ request }) => {
     try {
         // Parse form data
-        const formData = await request.formData();
-        const comment = formData.get('comment'); // Can be empty but not null
-        const key = formData.get('key');
+        const body = await request.json();
+        const comment = body["comment"]; // Can be empty but not null
+        const key = body["key"]
 
         console.log(key , comment)
         if (!key || typeof key !== 'string') {

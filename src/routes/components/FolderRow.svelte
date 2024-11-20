@@ -37,11 +37,11 @@
     };
 
     const handleDelete = async () => {
-    const confirmation = window.confirm("Are you sure you want to delete this folder?");
-    if (confirmation) {
-        await folderObject.deleteFolder();
-    }
-};
+        const confirmation = window.confirm("Are you sure you want to delete this folder?");
+        if (confirmation) {
+            await folderObject.deleteFolder();
+        }
+    };
 </script>
 
 <div 
