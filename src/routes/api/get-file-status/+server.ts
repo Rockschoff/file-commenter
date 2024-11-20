@@ -30,7 +30,6 @@ async function getMongoClient() {
 }
 
 export const POST: RequestHandler = async ({ request }) => {
-    console.log(request)
     try {
         const body = await request.json(); // Parse JSON body
         const key = body.key;
