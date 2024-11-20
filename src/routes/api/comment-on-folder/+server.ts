@@ -21,15 +21,13 @@ const mongoCollection = import.meta.env.VITE_MONGODB_COLLECTION as string;
 const client = new MongoClient(mongoUri);
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
-    const formData = await request.formData();
-    const folderKey = formData.get('key');
+    const { key: folderKey, comment }: { key: string; comment: string } = await request.json();
     if (!folderKey || typeof folderKey !== 'string') {
         return new Response(
             'No folder key was provided, or it was in the wrong format',
             { status: 400 }
         );
     }
-    const comment = formData.get('comment');
     if (typeof comment !== 'string') {
         return new Response(
             'Comment was not provided or was in the wrong format',

@@ -154,15 +154,19 @@ export class FolderObject {
             return
         }
         const url = "/api/comment-on-folder"
-        const formData = new FormData()
-        formData.append("key" , this.S3Key)
-        formData.append("comment" , newComment)
+        const requestData = {
+            key: this.S3Key,
+            comment: newComment,
+        };
 
         try{
 
             const response = await fetch(url , {
                 method : "POST",
-                body : formData
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData), // Send JSON payload
             })
             if(response.ok){
                 console.log("Successfully updated the comments on folder : " , this.S3Key)
