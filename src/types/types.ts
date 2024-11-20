@@ -53,6 +53,7 @@ export class FileObject {
                 }
             }else{
                 console.error("Failed to fetch file status. HTTP status:", response);
+                console.log(response.statusText)
                 this._status = false;
             }
         }catch(err){
