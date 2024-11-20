@@ -187,7 +187,6 @@ export class FolderObject {
         const get_files_url = "/api/get-all-files-with-prefix";
         const delete_url = "/api/delete";
         const prefix = this.S3Key;
-        const formData = new FormData();
     
         try {
             // Fetch all files with the given prefix
@@ -196,46 +195,44 @@ export class FolderObject {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ prefix }),
+                body: JSON.stringify({ prefix }), // Send prefix as JSON
             });
     
             if (response.ok) {
                 const data = await response.json();
     
                 if (data.keys && Array.isArray(data.keys)) {
-                    // Add each key to FormData
-                    data.keys.forEach((key: string) => {
-                        formData.append("filenames", key);
-                    });
+                    // Prepare the list of filenames for deletion
+                    const filenames = data.keys;
+    
+                    try {
+                        // Delete the files using the delete API
+                        const deleteResponse = await fetch(delete_url, {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ filenames }), // Send filenames as JSON
+                        });
+    
+                        if (deleteResponse.ok) {
+                            console.log("Successfully deleted files:", deleteResponse.status);
+                            // Optionally reload the file list if a function like loadCurrentFileList exists
+                            loadCurrentFileList();
+                        } else {
+                            console.error("Failed to delete files:", deleteResponse.statusText);
+                        }
+                    } catch (err) {
+                        console.error("Error deleting files for the folder:", err);
+                    }
                 } else {
                     console.error("Unexpected response format:", data);
-                    return;
                 }
             } else {
                 console.error("Failed to fetch file list:", response.statusText);
-                return;
             }
         } catch (err) {
             console.error("Error fetching files to delete:", err);
-            return;
-        }
-    
-        try {
-            // Delete the files using the delete API
-            const deleteResponse = await fetch(delete_url, {
-                method: "POST",
-                body: formData,
-            });
-    
-            if (deleteResponse.ok) {
-                console.log("Successfully deleted files:", deleteResponse.status);
-                // Optionally reload the file list if a function like loadCurrentFileList exists
-                loadCurrentFileList();
-            } else {
-                console.error("Failed to delete files:", deleteResponse.statusText);
-            }
-        } catch (err) {
-            console.error("Error deleting files for the folder:", err);
         }
     }
     

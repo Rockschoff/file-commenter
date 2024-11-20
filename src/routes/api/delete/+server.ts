@@ -22,8 +22,7 @@ const client = new MongoClient(mongoUri);
 
 export const POST: RequestHandler = async ({ request }) => {
     try {
-        const formData = await request.formData();
-        const keys = formData.getAll('filenames') as string[]; // Expecting 'filenames' as a list
+        const { keys } = await request.json();
 
         if (!keys || keys.length === 0) {
             return new Response(JSON.stringify({ error: 'No filenames provided' }), { status: 400 });
@@ -35,7 +34,7 @@ export const POST: RequestHandler = async ({ request }) => {
         const s3DeleteParams = {
             Bucket: s3Bucket,
             Delete: {
-                Objects: keys.map((key) => ({ Key: key })),
+                Objects: keys.map((key :string) => ({ Key: key })),
                 Quiet: true, // Suppress success/failure for each object
             },
         };
@@ -44,7 +43,7 @@ export const POST: RequestHandler = async ({ request }) => {
         console.log(`Successfully deleted files from S3:`, s3DeleteResponse);
 
         //get the basename of the files from the s3 key path
-        const basenames = keys.map((key) => path.basename(key));
+        const basenames = keys.map((key : string) => path.basename(key));
         //use the base as document_name in mongodb
 
         // Delete records from MongoDB
