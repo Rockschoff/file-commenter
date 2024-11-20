@@ -35,8 +35,9 @@ export class FileObject {
     async checkStatus(): Promise<void> {
         // Add logic to check file status
         const url = "/api/get-file-status"
-        const formData = new FormData()
-        formData.append("key" , this.S3Key)
+        const requestData = {
+            key: this.S3Key,
+        };
 
         try{
             const response = await fetch(url , {
@@ -44,7 +45,7 @@ export class FileObject {
                 headers:{
                     'Content-type': 'application/json'
                 },
-                body : formData
+                body: JSON.stringify(requestData),
             })
             if(response.ok){
                 const data  = await response.json()

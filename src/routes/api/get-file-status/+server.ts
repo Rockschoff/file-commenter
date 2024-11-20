@@ -32,8 +32,8 @@ async function getMongoClient() {
 export const POST: RequestHandler = async ({ request }) => {
     console.log(request)
     try {
-        const formData = await request.formData();
-        const key = formData.get('key');
+        const body = await request.json(); // Parse JSON body
+        const key = body.key;
 
         console.log(key)
 
