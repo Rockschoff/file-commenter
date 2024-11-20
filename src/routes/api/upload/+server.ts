@@ -39,10 +39,10 @@ async function sendFileForProcessing(filePath: string, filename: string): Promis
 
         console.log(`Sending file ${filename} for processing...`);
 
-        const response = fetch(url, {
-            method: "POST",
-            body: formData,
-        });
+        // const response = fetch(url, {
+        //     method: "POST",
+        //     body: formData,
+        // });
 
         // if (response.ok) {
         //     console.log(`File ${filename} sent for processing successfully.`);

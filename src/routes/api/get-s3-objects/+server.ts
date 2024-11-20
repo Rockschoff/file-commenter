@@ -23,7 +23,7 @@ const s3 = new AWS.S3({
 async function getObjectMetadata(bucket: string, key: string): Promise<string> {
     try {
         const metadata = await s3.headObject({ Bucket: bucket, Key: key }).promise();
-        // console.log(metadata.Metadata?.comment)
+        console.log(metadata.Metadata)
         return metadata.Metadata?.comment || ''; // Ensure it always returns a string
     } catch (error) {
         console.error(`Error fetching metadata for ${key}:`, error);
