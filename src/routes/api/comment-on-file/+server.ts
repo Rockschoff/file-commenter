@@ -17,6 +17,11 @@ const mongoUri = import.meta.env.VITE_MONGODB_URI as string;
 const mongoDatabase = import.meta.env.VITE_MONGODB_DATABASE as string;
 const mongoCollection = import.meta.env.VITE_MONGODB_COLLECTION as string;
 
+const sanitizeMetadataValue = (value: string): string => {
+    // Replace newlines and other control characters with a space
+    return value.replace(/[\r\n\t]/g, ' ').trim();
+};
+
 // Create MongoDB client
 const client = new MongoClient(mongoUri);
 
@@ -35,6 +40,8 @@ export const POST: RequestHandler = async ({ request }) => {
             return new Response(JSON.stringify({ error: 'Comment is required (can be empty)' }), { status: 400 });
         }
 
+        const sanitizedComment = sanitizeMetadataValue(comment);
+
         //<TASK> Also add the comment to the s3object.Metadata.comment field. if the metadata.comment does not exist then create  the field, the key is the s3 key
         // Update S3 object metadata
         let metadata: AWS.S3.Metadata = {};
@@ -42,7 +49,7 @@ export const POST: RequestHandler = async ({ request }) => {
             const headResponse = await s3.headObject({ Bucket: s3Bucket, Key: key }).promise();
             metadata = headResponse.Metadata || {};
             console.log(metadata)
-            metadata.comment = comment; // Update or add the comment field
+            metadata.comment = sanitizedComment; // Update or add the comment field
         } catch (err: any) {
             if (err.code === 'NotFound') {
                 return new Response(JSON.stringify({ error: 'S3 object not found' }), { status: 404 });
