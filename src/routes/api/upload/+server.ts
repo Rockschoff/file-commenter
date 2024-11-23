@@ -11,6 +11,36 @@ const s3 = new AWS.S3({
     region: import.meta.env.VITE_AWS_REGION,
 });
 
+async function listFilesInS3(bucket: string): Promise<string[]> {
+    try {
+        const params: AWS.S3.ListObjectsV2Request = {
+            Bucket: bucket,
+        };
+
+        const data = await s3.listObjectsV2(params).promise();
+        const fileKeys = data.Contents?.map((item) => item.Key || '') || [];
+
+        console.log('Files in S3 bucket:', fileKeys);
+        return fileKeys;
+    } catch (error) {
+        console.error('Error listing files in S3:', error);
+        throw new Error('Failed to list files in S3.');
+    }
+}
+
+async function verifyFileInS3(bucket: string, fileKey: string): Promise<boolean> {
+    const fileKeys = await listFilesInS3(bucket);
+
+    if (fileKeys.includes(fileKey)) {
+        console.log(`File "${fileKey}" exists in the S3 bucket.`);
+        return true;
+    } else {
+        console.error(`File "${fileKey}" does not exist in the S3 bucket.`);
+        return false;
+    }
+}
+
+
 // Helper function to upload a file to S3
 async function uploadToS3(bucket: string, key: string, filePath: string): Promise<void> {
     const fileContent = await fs.readFile(filePath);
@@ -112,6 +142,11 @@ export const POST: RequestHandler = async ({ request }) => {
 
             // Upload to S3
             await uploadToS3(bucket, s3Key, filePath);
+            const exists = await verifyFileInS3(bucket, s3Key);
+            if (!exists) {
+                console.log("File not uploaded in the s3")
+                throw new Error(`File verification failed: "${s3Key}" not found in S3.`);
+            }
 
             // Clean up the temporary file
             await fs.unlink(filePath);
