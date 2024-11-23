@@ -105,13 +105,14 @@ export class FileObject {
   
     async deleteFile(): Promise<void> {
         // Add logic to delete the file
-        const formData = new FormData()
-        formData.append("filenames" , this.S3Key)
         const url = "/api/delete"
         try{
             const response = await fetch(url , {
                 method : "POST",
-                body : formData
+                headers:{
+                    'Content-type': 'application/json'
+                },
+                body : JSON.stringify({"keys" : [this.S3Key]})
             })
 
             if(response.ok){
