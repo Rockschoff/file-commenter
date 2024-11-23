@@ -120,8 +120,9 @@ export const POST: RequestHandler = async ({ request }) => {
                 throw new Error('Each file must have a name and content.');
             }
 
-            
-            const s3Key = level==""?file.name:path.join(level, file.name);
+            let filename : string = file.name
+
+            const s3Key = level==""?filename.substring(1):path.join(level, file.name);
             console.log("Processing file:", s3Key, level, file.name , level=="");
 
             const filePath = path.join('/tmp', file.name);
