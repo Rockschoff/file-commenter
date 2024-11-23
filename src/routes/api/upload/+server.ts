@@ -39,7 +39,7 @@ async function sendFileForProcessing(filePath: string, filename: string): Promis
 
         console.log(`Sending file ${filename} for processing...`);
 
-        // const response = fetch(url, {
+        // const response = await fetch(url, {
         //     method: "POST",
         //     body: formData,
         // });
@@ -59,49 +59,62 @@ async function sendFileForProcessing(filePath: string, filename: string): Promis
 // API handler
 export const POST: RequestHandler = async ({ request }) => {
     try {
-        const formData = await request.formData();
+        // Ensure the request is JSON
+        if (request.headers.get('Content-Type') !== 'application/json') {
+            return new Response(
+                JSON.stringify({ error: 'Invalid content type. Expected application/json' }),
+                { status: 400 }
+            );
+        }
+
+        
+        const data = await request.json();
 
         const bucket = import.meta.env.VITE_AWS_S3_BUCKET as string;
         if (!bucket) {
             throw new Error('S3 bucket name is not defined in environment variables.');
         }
 
-        // Extract the `level` parameter
-        const levelInput = formData.get('level')?.toString() || ""
-        const level = levelInput==="/"?"":levelInput
-        console.log("LEVEL is " ,level )
-        // Process each file in the form data
-        for (const [fieldName, file] of formData.entries()) {
-            if (file instanceof File) {
-                // Reconstruct full file path including folder structure
-                const folderPath = fieldName === 'folder' ? path.dirname(file.webkitRelativePath || file.name) : '';
-                const s3Key = path.join(level, file.name);
-                console.log(s3Key , level , file.name)
-                const filePath = path.join('/tmp', file.name);
+        // Extract `level` and `files` from the request JSON
+        const level = data.level || "";
+        const files = data.files; // `files` should be an array of { name, content (base64) }
+        
+        if (!Array.isArray(files) || files.length === 0) {
+            throw new Error('No files provided.');
+        }
 
-                // Ensure directory structure exists
-                const dirPath = path.dirname(filePath);
-                await fs.mkdir(dirPath, { recursive: true });
+        console.log("LEVEL is", level);
 
-                console.log('Writing the file to', filePath);
-
-                // Write the file to /tmp
-                const arrayBuffer = await file.arrayBuffer();
-                await fs.writeFile(filePath, Buffer.from(arrayBuffer));
-
-                console.log('Done writing the file to', filePath);
-
-                
-
-                // Send for processing
-                await sendFileForProcessing(filePath, path.basename(s3Key));
-
-                // Upload to S3
-                await uploadToS3(bucket, s3Key, filePath);
-
-                // Clean up the temporary file
-                await fs.unlink(filePath);
+        for (const file of files) {
+            if (!file.name || !file.content) {
+                throw new Error('Each file must have a name and content.');
             }
+
+            const s3Key = path.join(level, file.name);
+            console.log("Processing file:", s3Key, level, file.name);
+
+            const filePath = path.join('/tmp', file.name);
+
+            // Ensure directory structure exists
+            const dirPath = path.dirname(filePath);
+            await fs.mkdir(dirPath, { recursive: true });
+
+            console.log('Writing the file to', filePath);
+
+            // Decode base64 content and write the file to /tmp
+            const buffer = Buffer.from(file.content, 'base64');
+            await fs.writeFile(filePath, buffer);
+
+            console.log('Done writing the file to', filePath);
+
+            // Send for processing
+            await sendFileForProcessing(filePath, path.basename(s3Key));
+
+            // Upload to S3
+            await uploadToS3(bucket, s3Key, filePath);
+
+            // Clean up the temporary file
+            await fs.unlink(filePath);
         }
 
         return new Response(

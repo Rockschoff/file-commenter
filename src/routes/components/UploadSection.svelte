@@ -14,23 +14,52 @@
   let uploadMessage: string = "";
 
   async function handleFileUpload(event: Event): Promise<void> {
-      const input = event.target as HTMLInputElement;
-      if (input.files) {
-          files = Array.from(input.files).map((file) => ({
-              name: `${$currentPath === "/" ? "" : $currentPath}/${file.name}`,
-              size: file.size,
-              type: file.type,
-          }));
+    const input = event.target as HTMLInputElement;
+    if (input.files) {
+        const files = [];
+        for (const file of Array.from(input.files)) {
+            const fileContent = await readFileAsBase64(file);
+            files.push({
+                name: `${$currentPath === "/" ? "" : $currentPath}/${file.name}`,
+                size: file.size,
+                type: file.type,
+                content: fileContent,
+            });
+        }
 
-          const formData = new FormData();
-          for (const file of input.files) {
-              formData.append("file", file);
-              formData.append("level" , $currentPath)
-          }
+        // Construct JSON payload
+        const payload = {
+            level: $currentPath === "/" ? "" : $currentPath,
+            files: files,
+        };
 
-          await uploadToS3(formData);
-      }
-  }
+        // Send JSON payload to the new endpoint
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            console.error('File upload failed:', await response.json());
+        } else {
+            console.log('File uploaded successfully:', await response.json());
+        }
+    }
+}
+
+// Helper function to read file as a base64 string
+async function readFileAsBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
+        reader.onerror = reject;
+        reader.readAsDataURL(file); // Read file as data URL and extract base64 content
+    });
+}
+
 
   async function handleFolderUpload(event: Event): Promise<void> {
       const input = event.target as HTMLInputElement;
