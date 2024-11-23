@@ -122,7 +122,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
             let filename : string = file.name
 
-            const s3Key = level==""?filename.substring(1):path.join(level, file.name);
+            const s3Key = filename;
             console.log("Processing file:", s3Key, level, file.name , level=="");
 
             const filePath = path.join('/tmp', file.name);

@@ -20,7 +20,7 @@
         for (const file of Array.from(input.files)) {
             const fileContent = await readFileAsBase64(file);
             files.push({
-                name: `${$currentPath === "/" ? "" : $currentPath}/${file.name}`,
+                name: $currentPath=="/"?file.name:`${$currentPath}/${file.name}`,
                 size: file.size,
                 type: file.type,
                 content: fileContent,
