@@ -46,7 +46,9 @@
             console.error('File upload failed:', await response.json());
         } else {
             console.log('File uploaded successfully:', await response.json());
+            
         }
+        loadCurrentFileList()
     }
 }
 
