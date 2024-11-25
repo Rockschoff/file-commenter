@@ -1,6 +1,7 @@
 import { currentFileList , currentPath, currentTeamList } from "../stores/stores";
 import { FileObject , FolderObject } from "../types/types";
 import { TeamObject } from "../types/teams_types";
+import path from "path"
 
 function getCurrentPath(){
     let currentPathValue = ""
@@ -28,14 +29,17 @@ export async function getFileListWithPrefix(prefix: string): Promise<(FileObject
         // Map and resolve promises using Promise.all
         const answer = await Promise.all(
             data.map(async (item: any) => {
-                if (item.S3Key.endsWith('/')) {
-                    return new FolderObject(item.S3Key, item.comment);
-                } else {
-                    const fileObject = new FileObject(item.S3Key, item.status, item.comment);
-                    console.log("checking status")
-                    await fileObject.checkStatus();
-                    return fileObject;
+                if(path.basename(item.s3Key)!=="__comment__.txt"){
+                    if (item.S3Key.endsWith('/')) {
+                        return new FolderObject(item.S3Key, item.comment);
+                    } else {
+                        const fileObject = new FileObject(item.S3Key, item.status, item.comment);
+                        console.log("checking status")
+                        await fileObject.checkStatus();
+                        return fileObject;
+                    }
                 }
+                
             })
         );
 
