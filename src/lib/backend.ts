@@ -1,7 +1,7 @@
 import { currentFileList , currentPath, currentTeamList } from "../stores/stores";
 import { FileObject , FolderObject } from "../types/types";
 import { TeamObject } from "../types/teams_types";
-import path from "path"
+
 
 function getCurrentPath(){
     let currentPathValue = ""
@@ -29,7 +29,8 @@ export async function getFileListWithPrefix(prefix: string): Promise<(FileObject
         // Map and resolve promises using Promise.all
         const answer = await Promise.all(
             data.map(async (item: any) => {
-                if(path.basename(item.s3Key)!=="__comment__.txt"){
+                
+                if(item.S3Key.split("/").pop()!=="__comment__.txt"){
                     if (item.S3Key.endsWith('/')) {
                         return new FolderObject(item.S3Key, item.comment);
                     } else {
@@ -38,12 +39,14 @@ export async function getFileListWithPrefix(prefix: string): Promise<(FileObject
                         await fileObject.checkStatus();
                         return fileObject;
                     }
+                }else{
+                    return null
                 }
                 
             })
         );
 
-        return answer; // Resolved array of objects // this is a array of promisses , that is not what i wnat to return <TASK>
+        return answer.filter((item) => item !== null); //<TASK> remove all the null in this array
     } catch (error) {
         console.error('Error in getFileListWithPrefix:', error);
         return [];
