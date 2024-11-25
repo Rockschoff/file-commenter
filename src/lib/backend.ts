@@ -1,5 +1,6 @@
-import { currentFileList , currentPath } from "../stores/stores";
+import { currentFileList , currentPath, currentTeamList } from "../stores/stores";
 import { FileObject , FolderObject } from "../types/types";
+import { TeamObject } from "../types/teams_types";
 
 function getCurrentPath(){
     let currentPathValue = ""
@@ -49,4 +50,15 @@ export async function loadCurrentFileList(){
     const currentPathValue = getCurrentPath()
     const fileList = await getFileListWithPrefix(currentPathValue)
     currentFileList.set(fileList)
+}
+
+export async function loadCurrentTeamList(){
+
+        currentTeamList.set([
+            new TeamObject("1364748" , "Team A" , [] , []),
+            new TeamObject("cnjfhs98" , "Team B" , [] , []),
+            new TeamObject("cnjfhsojeier98" , "Team C" , [] , [])
+        ])
+    
+    
 }

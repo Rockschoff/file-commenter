@@ -70,7 +70,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
     try {
         // Handle S3 comment file update
-        const commentFileKey = `${folderKey}/__comment__.txt`;
+        const commentFileKey = `${folderKey}__comment__.txt`;
 
         // Delete old comment file if it exists
         try {
