@@ -45,7 +45,8 @@
         <p>{errorMessage}</p>
     </div>
 {:else if pdfUrl}
-    <iframe src={pdfUrl} style="width: 100%; height: 100vh;" frameborder="0"></iframe>
+    pdf is there
+    <!-- <iframe src={pdfUrl} style="width: 100%; height: 100vh;" frameborder="0"></iframe> -->
 {:else}
     <div>Loading...</div>
 {/if}

@@ -37,10 +37,31 @@
     };
 
     const handleView = () => {
-        const baseUrl = "/";
-        const fileKey = encodeURIComponent(fileObject.S3Key);
-        const viewUrl = `${baseUrl}${fileKey}`;
-        window.open(viewUrl, "_blank");
+        // // const baseUrl = "/";
+        // // const fileKey = encodeURIComponent(fileObject.S3Key);
+        // // const viewUrl = `${baseUrl}${fileKey}`;
+        // // window.open(viewUrl, "_blank");
+        // const preSignedURL: string = await fileObject.getObjectURL();
+        // if (preSignedURL !== "") {
+        //     window.open(preSignedURL, "_blank");
+        //     // try {
+        //     //     // Write to clipboard first, as it's a user-triggered action
+        //     //     await navigator.clipboard.writeText(preSignedURL);
+        //     //     console.log("Wrote to clipboard:", preSignedURL);
+
+        //     //     // Open the URL in a new tab
+        //     //     window.open(preSignedURL, "_blank");
+        //     // } catch (error) {
+        //     //     console.error("Failed to write to clipboard:", error);
+        //     //     alert("Unable to copy the URL to the clipboard.");
+        //     // }
+        // } else {
+        //     console.error("Failed to get the pre-signed URL. Not copied.");
+        //     alert("Failed to retrieve the file URL.");
+        // }
+
+        window.open(fileObject.preSignedURL , "_blank")
+        
     };
 
     const handleCheckStatus = async () => {

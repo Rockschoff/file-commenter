@@ -69,3 +69,10 @@ export async function loadCurrentTeamList(){
     
     
 }
+
+export async function getMatchingS3Keys(name : string):Promise<string[]>{
+    //exmaple implementation for refernece real implementation coming soon.
+
+    //this function returns alist of matching s3 keys after searching an s3 bucket
+    return ["ABC" , "DEF/EFG"]
+}

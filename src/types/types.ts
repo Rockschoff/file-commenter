@@ -5,12 +5,14 @@ export class FileObject {
     readonly S3Key: string; // Assigned during initialization
     private _status: boolean; // Read-only via a getter
     private _comment: string;
+    private _preSignedURL : string = "";
     
   
     constructor(S3Key: string, status: boolean, comment: string) {
         this.S3Key = S3Key;
         this._status = status
         this._comment = comment;
+        
     }
   
     // Getter for status (read-only)
@@ -22,6 +24,10 @@ export class FileObject {
     get comment(): string {
         return this._comment;
     }
+
+    get preSignedURL() : string {
+        return this._preSignedURL
+    }
   
     set comment(newComment: string) {
         this._comment = newComment;
@@ -30,6 +36,38 @@ export class FileObject {
     // Async methods
     async downloadFile(): Promise<void> {
         // Add logic to download the file
+    }
+
+    async getObjectURL() : Promise<void>{
+
+        const url = "/api/get-pre-signed-url"
+        const requestData = {
+            key : this.S3Key
+        }
+        let ans : string = ""
+
+        try{
+            const response = await fetch(url , {
+                method:"POST",
+                headers:{
+                    'Content-type' : "application/json"
+                },
+                body : JSON.stringify(requestData)
+
+            })
+            if(response.ok){
+                const data = await response.json()
+                if(data.url){
+                    ans = data.url
+                }
+
+            }
+        }catch(err){
+            console.error("Error while getting the pre signed url")
+        }
+
+        this._preSignedURL = ans;
+        
     }
   
     async checkStatus(): Promise<void> {
@@ -64,6 +102,8 @@ export class FileObject {
             console.error("error check file status " , err)
             this._status=false
         }
+
+        await this.getObjectURL()
     }
   
     async loadFileToShow(): Promise<void> {
