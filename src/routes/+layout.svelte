@@ -12,7 +12,7 @@
             // Update the authStore with the current user information
             authStore.update((curr) => ({ ...curr, isLoading: false, currentUser: user }));
             // If the user is not authenticated and the current path is not the home page, redirect to home
-            if (!user && window.location.pathname !== '/') {
+            if (!user && window.location.pathname !== '/login') {
                 goto("/login");
             }
             
