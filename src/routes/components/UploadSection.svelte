@@ -6,51 +6,63 @@
       name: string;
       size: number;
       type: string;
+      content : string|null;
   };
 
   let files: SelectedFile[] = [];
   let folders: SelectedFile[] = [];
+  let uploadedFiles : SelectedFile[] = [];
   let uploading: boolean = false;
   let uploadMessage: string = "";
 
-  async function handleFileUpload(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-        const files = [];
-        for (const file of Array.from(input.files)) {
-            const fileContent = await readFileAsBase64(file);
-            files.push({
-                name: $currentPath=="/"?file.name:`${$currentPath}${file.name}`,
-                size: file.size,
-                type: file.type,
-                content: fileContent,
-            });
+ 
+
+
+
+  async function handleFileUpload(event : Event) : Promise<void> {
+        uploading = true;
+        const input = event.target as HTMLInputElement;
+        if (input.files){
+            for (const file of Array.from(input.files)) {
+                const fileContent = await readFileAsBase64(file);
+                files = [...files , {
+                    name: $currentPath=="/"?file.name:`${$currentPath}${file.name}`,
+                    size: file.size,
+                    type: file.type,
+                    content: fileContent}
+                ];
+            }
+            for (const file of files) {
+                let uploadArray = [file]
+                let payload = {
+                    level: $currentPath === "/" ? "" : $currentPath,
+                    files: uploadArray,
+                };
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    console.error('File upload failed:', await response.json());
+                } else {
+                    console.log('File uploaded successfully:', await response.json());
+                    uploadedFiles = [...uploadedFiles , file]
+                    
+                }
+                loadCurrentFileList()
+            }
         }
 
-        // Construct JSON payload
-        const payload = {
-            level: $currentPath === "/" ? "" : $currentPath,
-            files: files,
-        };
-
-        // Send JSON payload to the new endpoint
-        const response = await fetch('/api/upload', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-            console.error('File upload failed:', await response.json());
-        } else {
-            console.log('File uploaded successfully:', await response.json());
-            
-        }
-        loadCurrentFileList()
+        uploading = false;
+        files=[]
+        uploadedFiles=[]
     }
-}
+
+
 
 // Helper function to read file as a base64 string
 async function readFileAsBase64(file: File): Promise<string> {
@@ -62,72 +74,49 @@ async function readFileAsBase64(file: File): Promise<string> {
     });
 }
 
-
-    async function handleFolderUpload(event: Event): Promise<void> {
+    async function handleFolderUpload(event : Event) : Promise<void> {
+        uploading = true;
         const input = event.target as HTMLInputElement;
-        if (input.files) {
-            const files = [];
-
+        if (input.files){
             for (const file of Array.from(input.files)) {
                 const fileContent = await readFileAsBase64(file);
-                files.push({
+                files = [...files , {
                     name: $currentPath === "/" ? file.webkitRelativePath : `${$currentPath}${file.webkitRelativePath}`,
                     size: file.size,
                     type: file.type,
-                    content: fileContent,
+                    content: fileContent}
+                ];
+            }
+            for (const file of files) {
+                let uploadArray = [file]
+                let payload = {
+                    level: $currentPath === "/" ? "" : $currentPath,
+                    files: uploadArray,
+                };
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
                 });
+
+                if (!response.ok) {
+                    console.error('File upload failed:', await response.json());
+                } else {
+                    console.log('File uploaded successfully:', await response.json());
+                    uploadedFiles = [...uploadedFiles , file]
+                    
+                }
+                loadCurrentFileList()
             }
-
-            // Construct JSON payload
-            const payload = {
-                level: $currentPath === "/" ? "" : $currentPath,
-                files: files,
-            };
-
-            // Send JSON payload to the existing endpoint
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) {
-                console.error('Folder upload failed:', await response.json());
-            } else {
-                console.log('Folder uploaded successfully:', await response.json());
-            }
-
-            loadCurrentFileList();
         }
+
+        uploading = false;
+        files=[]
+        uploadedFiles=[]
     }
 
-
-  async function uploadToS3(formData: FormData): Promise<void> {
-      uploading = true;
-      uploadMessage = "Uploading...";
-
-      try {
-          const response = await fetch("/api/upload", {
-              method: "POST",
-              body: formData,
-          });
-
-          if (response.ok) {
-              uploadMessage = "Upload successful!";
-          } else {
-              const error = await response.json();
-              uploadMessage = `Upload failed: ${error.error}`;
-          }
-      } catch (error) {
-          console.error("Error uploading to S3:", error);
-          uploadMessage = "Upload failed: Network error.";
-      } finally {
-          uploading = false;
-          loadCurrentFileList();
-      }
-  }
 </script>
 
 <div class="w-full flex justify-center items-center gap-6 mt-8 mb-8">
@@ -152,13 +141,16 @@ async function readFileAsBase64(file: File): Promise<string> {
 <!-- Display Uploaded Files -->
 {#if files.length > 0}
   <div class="mt-6 w-full">
+    <h1>Please do not reload</h1>
       <h3 class="text-xl font-semibold text-gray-800 mb-4">Uploaded Files:</h3>
       <ul class="divide-y divide-gray-200">
           {#each files as file}
-              <li class="py-3 flex justify-between">
-                  <span class="text-gray-700">{file.name}</span>
-                  <span class="text-gray-500 text-sm">{(file.size / 1024).toFixed(2)} KB</span>
-              </li>
+              {#if !uploadedFiles.includes(file)}
+                <li class="py-3 flex justify-between">
+                    <span class="text-gray-700">{file.name}</span>
+                    <span class="text-gray-500 text-sm">{(file.size / 1024).toFixed(2)} KB</span>
+                </li>
+              {/if}
           {/each}
       </ul>
   </div>
