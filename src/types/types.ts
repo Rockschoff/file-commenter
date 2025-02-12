@@ -248,7 +248,7 @@ export class FolderObject {
     
                 if (data.keys && Array.isArray(data.keys)) {
                     // Prepare the list of filenames for deletion
-                    const filenames = data.keys;
+                    const keys = data.keys;
     
                     try {
                         // Delete the files using the delete API
@@ -257,7 +257,7 @@ export class FolderObject {
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ filenames }), // Send filenames as JSON
+                            body: JSON.stringify({ keys }), // Send filenames as JSON
                         });
     
                         if (deleteResponse.ok) {

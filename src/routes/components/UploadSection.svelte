@@ -63,26 +63,46 @@ async function readFileAsBase64(file: File): Promise<string> {
 }
 
 
-  async function handleFolderUpload(event: Event): Promise<void> {
-      const input = event.target as HTMLInputElement;
-      if (input.files) {
-          const formData = new FormData();
-          Array.from(input.files).forEach((file) => {
-              const relativePath = file.webkitRelativePath || file.name;
-              formData.append("folder", file, relativePath);
-              console.log($currentPath)
-              formData.append("level", $currentPath)
-          });
+    async function handleFolderUpload(event: Event): Promise<void> {
+        const input = event.target as HTMLInputElement;
+        if (input.files) {
+            const files = [];
 
-          folders = Array.from(input.files).map((file) => ({
-              name: file.name,
-              size: file.size,
-              type: file.type,
-          }));
+            for (const file of Array.from(input.files)) {
+                const fileContent = await readFileAsBase64(file);
+                files.push({
+                    name: $currentPath === "/" ? file.webkitRelativePath : `${$currentPath}${file.webkitRelativePath}`,
+                    size: file.size,
+                    type: file.type,
+                    content: fileContent,
+                });
+            }
 
-          await uploadToS3(formData);
-      }
-  }
+            // Construct JSON payload
+            const payload = {
+                level: $currentPath === "/" ? "" : $currentPath,
+                files: files,
+            };
+
+            // Send JSON payload to the existing endpoint
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                console.error('Folder upload failed:', await response.json());
+            } else {
+                console.log('Folder uploaded successfully:', await response.json());
+            }
+
+            loadCurrentFileList();
+        }
+    }
+
 
   async function uploadToS3(formData: FormData): Promise<void> {
       uploading = true;

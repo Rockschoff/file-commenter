@@ -106,6 +106,7 @@ export const POST: RequestHandler = async ({ request }) => {
         }
 
         // Extract `level` and `files` from the request JSON
+        console.log(data)
         const level = data.level || "";
         const files = data.files; // `files` should be an array of { name, content (base64) }
         
